@@ -23,19 +23,28 @@ int main() {
             puts(arguments[i]);
         }
 
+        // קריאה לפונקציה move עם הנתיבים המתאימים
+        move(arguments);
 
+        // קריאה לפונקציה echoAppend עם הנתיבים המתאימים
+        echoAppend(arguments);
 
+        // קריאה לפונקציה read עם הנתיב המתאים
+        read(arguments);
 
         free(arguments); // שחרור זיכרון
         free(input); // שחרור זיכרון
-                examplepPipe();
-
+        
         logout(input); // בדיקת התנאי להתנתקות
         break; // יציאה מהלולאה
     }
     
     return 0;
 }
+
+
+
+
 
 
 // --------------------------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <errno.h>
 
 
 // בפונקציה הנ"ל קיבלנו את הנתיב ממנו אנחנו מריצים את התוכנית שלנו
@@ -194,7 +195,7 @@ void mypipe(char **argv1, char **argv2) {
     pid = fork();
     if (pid == -1) {
         perror("fork");
-        return 0;
+        return ;
     } else if (pid == 0) {
         // Child process
         close(pipefd[0]); // Close the read end of the pipe
@@ -216,6 +217,120 @@ void mypipe(char **argv1, char **argv2) {
         perror("execvp"); // This line should not be reached if execvp succeeds
         _exit(1);
     }
+}
+
+
+
+void move(char **arguments) {
+    if (arguments[1] == NULL) {
+        printf("mv: missing file operand\n");
+        return;
+    }
+
+    if (arguments[2] == NULL) {
+        printf("mv: missing destination file operand after '%s'\n", arguments[1]);
+        return;
+    }
+
+    if (arguments[3] != NULL) {
+        printf("mv: too many arguments\n");
+        return;
+    }
+
+    if (rename(arguments[1], arguments[2]) != 0) {
+
+        switch (errno) {
+            case ENOENT: // No such file or directory
+                printf("mv: cannot stat '%s': No such file or directory\n", arguments[1]);
+                break;
+            case EACCES: // Permission denied
+                printf("mv: cannot create regular file '%s': Permission denied\n", arguments[2]);
+                break;
+            case EISDIR: // Is a directory
+                printf("mv: cannot create regular file '%s': Is a directory\n", arguments[2]);
+                break;
+            case EEXIST: // File exists
+                printf("mv: cannot create regular file '%s': File exists\n", arguments[2]);
+                break;
+            default:
+                perror("mv"); // Print system error message
+                break;
+        }
+    } else {
+        printf("'%s' was successfully moved to '%s'\n", arguments[1], arguments[2]);
+    }
+}
+
+
+void echoAppend(char **args) {
+    // אם אחד הפרמטרים או שניהם הם NULL, אין לנו מספיק פרמטרים
+    if (args[1] == NULL || args[2] == NULL) {
+        printf("Usage: echo >> [file_path] [text_to_append]\n");
+        return;
+    }
+
+    // פתיחת קובץ להוספת תוכן, אם הקובץ אינו קיים הוא יווצר
+    FILE *file = fopen(args[2], "a");
+    if (file == NULL) {
+        printf("Failed to open file %s\n", args[2]);
+        return;
+    }
+
+    // מחרוזת עם התוכן שנרצה להוסיף
+    char *content = args[3];
+
+    // הוספת התוכן לקובץ
+    fprintf(file, "%s\n", content);
+
+    // סגירת הקובץ
+    fclose(file);
+
+    printf("Appended \"%s\" to file %s\n", content, args[2]);
+}
+
+void echorite(char **arguments) {
+    int size = 0;
+    while (arguments[size] != NULL) {
+        size++;
+    }
+    FILE *file;
+
+    if ((file = fopen(arguments[size - 1], "w")) == NULL) {
+        puts("error");
+        return;
+    }
+
+    // Write the received string to the file
+    for (int i = 1; i < size - 2; i++) {
+        fprintf(file, "%s ", arguments[i]);
+    }
+    fprintf(file, "\n"); // Add a line break
+
+    fclose(file);
+}
+
+void read(char **arguments) {
+    // בדיקה אם אין ארגומנט ראשון או שיש יותר מארגומנט אחד
+    if (arguments[1] == NULL || arguments[2]) {
+        puts("Usage: read [file_path]");
+        return;
+    }
+
+    FILE *file;
+    char ch;
+
+    // פתיחת הקובץ לקריאה
+    if (!(file = fopen(arguments[1], "r"))) {
+        puts("Error: Unable to open file");
+        return;
+    }
+
+    // קריאת הקובץ והדפסת התוכן שלו למסך
+    while ((ch = fgetc(file)) != EOF)
+        putchar(ch);
+
+    // סגירת הקובץ
+    fclose(file);
 }
 
 

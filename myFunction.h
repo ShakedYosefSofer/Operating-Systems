@@ -34,8 +34,9 @@ void cd(char **args);
 void cp(char *source_path, char *destination_path);
 void delete(char *path);
 void mypipe(char *argv1[], char *argv2[]);
-
-
-
+void move(char **arguments);
+void echoAppend(char **arguments);
+void echorite(char **arguments);
+void read(char **arguments);
 
 
