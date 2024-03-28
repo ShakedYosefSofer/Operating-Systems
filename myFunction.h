@@ -29,5 +29,11 @@ char* getInputFromUser();
 char** splitArgument(char*);
 void getLocation();
 
+void logout(char *);
+void cd(char **args);
+void cp(char *source_path, char *destination_path);
+void delete(char *path);
+
+
 
 

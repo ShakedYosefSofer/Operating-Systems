@@ -88,7 +88,104 @@ char **splitArgument(char *str)
     return arguments;
 }
 
+void logout(char *str) {
+    char *token;
+    char delimiter[] = " \t\n"; // רווח, טאב, או שורה חדשה משמשים כסיווגים לפצל
+
+    token = strtok(str, delimiter); // פיצול המחרוזת למחרוזות נפרדות
+
+    while (token != NULL) {
+        if (strcmp(token, "exit") == 0) { // אם המחרוזת הנוכחית היא "exit"
+            printf("Logging out...\n");
+            exit(EXIT_SUCCESS);
+        }
+
+        token = strtok(NULL, delimiter); // משך הבדיקה לתא הבא במערך המצביעים
+    }
+}
+
+
+void cd(char **args) {
+    char newPath[1024];
+    strcpy(newPath, "");
+
+    // אם המחרוזת הראשונה מתחילה בגרש, שרשר את כל התתי מחרוזות
+    if (args[1][0] == '"') {
+        for (int i = 1; args[i] != NULL; i++) {
+            strcat(newPath, args[i] + 1); // דלג על הגרש הראשון
+            strcat(newPath, " "); // הוסף רווח בין כל תת המחרוזות
+        }
+        // הוסף גרש סופי ותו נולה בסיום הנתיב
+        newPath[strlen(newPath) - 1] = '"';
+        newPath[strlen(newPath)] = '\0';
+    } else {
+        strcpy(newPath, args[1]); // אם אין גרש, שלח את התת-מחרוזת הראשונה
+    }
+
+    printf("Changing directory to: %s\n", newPath); // פונקציה מסיבות הדגמה
+    // פה נכניס את הפקודה המתאימה לשינוי הנתיב בפועל
+}
+
+void cp(char *source_path, char *destination_path) {
+    FILE *source_file, *destination_file;
+    char ch;
+
+    // פתיחת קובץ המקור לקריאה
+    source_file = fopen(source_path, "r");
+    if (source_file == NULL) {
+        printf("Error: Unable to open source file %s\n", source_path);
+        return;
+    }
+
+    // פתיחת קובץ היעד לכתיבה
+    destination_file = fopen(destination_path, "w");
+    if (destination_file == NULL) {
+        printf("Error: Unable to open destination file %s\n", destination_path);
+        fclose(source_file); // סגירת קובץ המקור
+        return;
+    }
+
+    // העתקת תוכן הקובץ המקורי לקובץ היעד
+    while ((ch = fgetc(source_file)) != EOF) {
+        fputc(ch, destination_file);
+    }
+
+    // סגירת קובץים
+    fclose(source_file);
+    fclose(destination_file);
+
+    printf("File copied successfully.\n");
+}
+
+
+
+void delete(char *str) {
+    // בדיקה האם הנתיב מכיל רווחים
+    if (strchr(str, ' ') != NULL) {
+        // הוספת גרשיים מסביב לנתיב כולו
+        char temp[strlen(str) + 3]; // +3 לשני הגרשיים והתו '\0'
+        sprintf(temp, "\"%s\"", str);
+        // מחיקת הקובץ על פי הנתיב המוגדר
+        if (remove(temp) == 0) {
+            printf("File deleted successfully.\n");
+        } else {
+            printf("Error: Unable to delete the file.\n");
+        }
+    } else {
+        // אם אין רווחים בנתיב, מחיקה רגילה
+        if (remove(str) == 0) {
+            printf("File deleted successfully.\n");
+        } else {
+            printf("Error: Unable to delete the file.\n");
+        }
+    }
+}
+
+
+
 
 
 // בכל שינוי יש לבצע קומיט מתאים העבודה מחייבת עבודה עם גיט.
 // ניתן להוסיף פונקציות עזר לתוכנית רק לשים לב שלא מוסיפים את חתימת הפונקציה לקובץ הכותרות
+
+
