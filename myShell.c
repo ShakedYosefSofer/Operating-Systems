@@ -6,58 +6,46 @@ int main() {
     while (1) {
         getLocation();
         char *input = getInputFromUser();
-        char **arguments = splitArgument(input); // פיצול הקלט למערך של מחרוזות
+        char **arguments = splitArgument(input); // Splitting the input into an array of strings
 
-        // בדיקה אם ישנם פחות מ-3 ארגומנטים (כאשר אחד מהם הוא הפקודה עצמה)
+        // Check if there are less than 3 arguments (when one of them is the command itself)
         if (arguments[2] == NULL) {
             printf("Usage: cp [source_file] [destination_file]\n");
         } else {
-            // קריאה לפונקציה cp עם הנתיבים המתאימים
+            // Call the cp function with the appropriate paths
             cp(arguments[1], arguments[2]);
-            // קריאה לפונקציה delete עם נתיב הקובץ המקורי
+            // Call the delete function with the original file path
             delete(arguments[1]);
         }
 
-        // הדפסת כל הארגומנטים
+        // Print all arguments
         for (int i = 0; arguments[i] != NULL; i++) {
             puts(arguments[i]);
         }
 
-        // קריאה לפונקציה move עם הנתיבים המתאימים
+        // Call the move function with the appropriate paths
         move(arguments);
 
-        // קריאה לפונקציה echoAppend עם הנתיבים המתאימים
+        // Call the echoAppend function with the appropriate paths
         echoAppend(arguments);
 
-        // קריאה לפונקציה read עם הנתיב המתאים
+        // Call the read function with the appropriate path
         // read(arguments);
 
-        free(arguments); // שחרור זיכרון
-        free(input); // שחרור זיכרון
+        free(arguments); // Free memory
+        free(input); // Free memory
         
-        logout(input); // בדיקת התנאי להתנתקות
-        break; // יציאה מהלולאה
+        logout(input); // Check logout condition
+        break; // Exit the loop
     }
     
     return 0;
 }
 
-
-
-
-
-
 // --------------------------------------------------------------------------------------------
-
-
-
-
-
 
 void welcome()
 {
-
-    
     puts("Welcome to my Shell");
 
     printf("        W   W  EEEEE  L       L         CCCCC   OOO   M     M  EEEEE\n");
@@ -72,7 +60,5 @@ void examplepPipe()
     char *argv1[] = {"ls", "-l", NULL}; // Example first command
     char *argv2[] = {"grep", "g", NULL}; // Example second command
 
-   return mypipe(argv1, argv2);
-   
+    return mypipe(argv1, argv2);
 }
-
