@@ -30,7 +30,7 @@ int main() {
         echoAppend(arguments);
 
         // קריאה לפונקציה read עם הנתיב המתאים
-        read(arguments);
+        // read(arguments);
 
         free(arguments); // שחרור זיכרון
         free(input); // שחרור זיכרון

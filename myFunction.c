@@ -309,29 +309,29 @@ void echorite(char **arguments) {
     fclose(file);
 }
 
-void read(char **arguments) {
-    // בדיקה אם אין ארגומנט ראשון או שיש יותר מארגומנט אחד
-    if (arguments[1] == NULL || arguments[2]) {
-        puts("Usage: read [file_path]");
-        return;
-    }
+// void read(char **arguments) {
+//     // בדיקה אם אין ארגומנט ראשון או שיש יותר מארגומנט אחד
+//     if (arguments[1] == NULL || arguments[2]) {
+//         puts("Usage: read [file_path]");
+//         return;
+//     }
 
-    FILE *file;
-    char ch;
+//     FILE *file;
+//     char ch;
 
-    // פתיחת הקובץ לקריאה
-    if (!(file = fopen(arguments[1], "r"))) {
-        puts("Error: Unable to open file");
-        return;
-    }
+//     // פתיחת הקובץ לקריאה
+//     if (!(file = fopen(arguments[1], "r"))) {
+//         puts("Error: Unable to open file");
+//         return;
+//     }
 
-    // קריאת הקובץ והדפסת התוכן שלו למסך
-    while ((ch = fgetc(file)) != EOF)
-        putchar(ch);
+//     // קריאת הקובץ והדפסת התוכן שלו למסך
+//     while ((ch = fgetc(file)) != EOF)
+//         putchar(ch);
 
-    // סגירת הקובץ
-    fclose(file);
-}
+//     // סגירת הקובץ
+//     fclose(file);
+// }
 
 
 
