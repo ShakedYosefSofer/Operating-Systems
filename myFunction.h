@@ -33,6 +33,8 @@ void logout(char *);
 void cd(char **args);
 void cp(char *source_path, char *destination_path);
 void delete(char *path);
+void mypipe(char *argv1[], char *argv2[]);
+
 
 
 

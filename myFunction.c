@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 
 // בפונקציה הנ"ל קיבלנו את הנתיב ממנו אנחנו מריצים את התוכנית שלנו
@@ -48,7 +49,7 @@ char *getInputFromUser()
 // עליכם לממש את הפונקציה strtok כלומר שהפונקציה הנ"ל תבצע בדיוק אותו הדבר רק בלי השימוש בפונקציה strtok
 char **splitArgument(char *str)
 {
-   
+
     int size = 2;
     int index = 0;
     char **arguments = (char **)malloc(size * sizeof(char *));
@@ -181,7 +182,41 @@ void delete(char *str) {
     }
 }
 
+void mypipe(char **argv1, char **argv2) {
+    int pipefd[2];
+    pid_t pid;
 
+    if (pipe(pipefd) == -1) {
+        perror("pipe");
+        return;
+    }
+
+    pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        return 0;
+    } else if (pid == 0) {
+        // Child process
+        close(pipefd[0]); // Close the read end of the pipe
+        dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout to the write end of the pipe
+        close(pipefd[1]); // Close the write end of the pipe
+
+        // Execute the first command
+        execvp(argv1[0], argv1);
+        perror("execvp"); // This line should not be reached if execvp succeeds
+        _exit(1);
+    } else {
+        // Parent process
+        close(pipefd[1]); // Close the write end of the pipe
+        dup2(pipefd[0], STDIN_FILENO); // Redirect stdin to the read end of the pipe
+        close(pipefd[0]); // Close the read end of the pipe
+
+        // Execute the second command
+        execvp(argv2[0], argv2);
+        perror("execvp"); // This line should not be reached if execvp succeeds
+        _exit(1);
+    }
+}
 
 
 

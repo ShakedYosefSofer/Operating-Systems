@@ -23,9 +23,13 @@ int main() {
             puts(arguments[i]);
         }
 
+
+
+
         free(arguments); // שחרור זיכרון
         free(input); // שחרור זיכרון
-        
+                examplepPipe();
+
         logout(input); // בדיקת התנאי להתנתקות
         break; // יציאה מהלולאה
     }
@@ -52,5 +56,14 @@ void welcome()
     printf("        W W W  EEEE   L       L       C       O     O M M M M  EEEE\n");
     printf("        WW WW  E      L       L        C       O   O  M  M  M  E\n");
     printf("         W W   EEEEE  LLLLL   LLLLL     CCCCC   OOO   M     M  EEEEE\n\n");
+}
+
+void examplepPipe()
+{
+    char *argv1[] = {"ls", "-l", NULL}; // Example first command
+    char *argv2[] = {"grep", "g", NULL}; // Example second command
+
+   return mypipe(argv1, argv2);
+   
 }
 
