@@ -37,6 +37,6 @@ void mypipe(char *argv1[], char *argv2[]);
 void move(char **arguments);
 void echoAppend(char **arguments);
 void echorite(char **arguments);
-// void read(char **arguments);
-
+void readf(char **arguments);
+void wordCount(char **arguments);
 

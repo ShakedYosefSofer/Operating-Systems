@@ -30,7 +30,10 @@ int main() {
         echoAppend(arguments);
 
         // Call the read function with the appropriate path
-        // read(arguments);
+         readf(arguments);
+        wordCount(arguments);
+        // examplepPipe(); // Example of using the pipe function
+        mypipe(arguments, arguments); // Call the pipe function with the appropriate paths  
 
         free(arguments); // Free memory
         free(input); // Free memory
