@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 
 // בפונקציה הנ"ל קיבלנו את הנתיב ממנו אנחנו מריצים את התוכנית שלנו
@@ -15,20 +16,26 @@
 
 void getLocation()
 {
+    // Buffer size for storing location
     char location[SIZE_BUFF];
-    if (getcwd(location, SIZE_BUFF) == NULL)
-        printf("Error\n");
-    else
-    {
-        // קביעת שם המחשב
-        char hostname[SIZE_BUFF];
-        gethostname(hostname, SIZE_BUFF);
 
-        // הצגת שם המחשב, הנתיב וסימן דולר
-        printf("\033[0;31m%s@%s:\033[0m", getenv("USER"), hostname);
-        printf("\033[0;34m%s\033[0m", location);
-        printf("\033[0;32m$\033[0m\n");
+    // Get the current working directory
+    if (getcwd(location, SIZE_BUFF) == NULL) {
+        printf("Error\n");
+        return;
     }
+
+    // Get the hostname
+    char hostname[SIZE_BUFF];
+    if (gethostname(hostname, SIZE_BUFF) == -1) {
+        printf("Error\n");
+        return;
+    }
+
+    // Display the prompt
+    printf("\033[0;31m%s@%s:\033[0m", getenv("USER"), hostname); // Display username and hostname in red color
+    printf("\033[0;34m%s\033[0m", location); // Display location in blue color
+    printf("\033[0;32m$\033[0m\n"); // Display prompt symbol in green color
 }
 
 char *getInputFromUser()
@@ -47,10 +54,10 @@ char *getInputFromUser()
     *(str + index) = '\0';
     return str;
 }
-// עליכם לממש את הפונקציה strtok כלומר שהפונקציה הנ"ל תבצע בדיוק אותו הדבר רק בלי השימוש בפונקציה strtok
+
+// You are required to implement the strtok function, meaning that this function will perform exactly the same thing but without using the strtok function.
 char **splitArgument(char *str)
 {
-
     int size = 2;
     int index = 0;
     char **arguments = (char **)malloc(size * sizeof(char *));
@@ -58,20 +65,20 @@ char **splitArgument(char *str)
 
     while (*subStr != '\0')
     {
-        // התחלה של כל מחרוזת
+        // Start of each substring
         while (*subStr == ' ')
             subStr++;
 
-        // סיום אם הגענו לסוף המחרוזת
+        // Exit if we reach the end of the string
         if (*subStr == '\0')
             break;
 
-        // איתור סיום התת-מחרוזת
-        char *end = subStr;
-        while (*end != ' ' && *end != '\0')
-            end++;
+        // Finding the end of the substring
+        char *end = strchr(subStr, ' ');
+        if (end == NULL)
+            end = subStr + strlen(subStr);
 
-        // אחסון התת-מחרוזת במערך המצביעים
+        // Storing the substring in the array of pointers
         int subStrLen = end - subStr;
         arguments[index] = (char *)malloc((subStrLen + 1) * sizeof(char));
         strncpy(arguments[index], subStr, subStrLen);
@@ -81,78 +88,88 @@ char **splitArgument(char *str)
         size++;
         arguments = (char **)realloc(arguments, size * sizeof(char *));
 
-        // התקדמות לתחילת התת-מחרוזת הבאה
+        // Moving to the start of the next substring
         subStr = end;
     }
 
-    arguments[index] = NULL; // הוספת NULL לסיום המערך
+    arguments[index] = NULL; // Adding NULL to the end of the array
 
     return arguments;
 }
 
+
+// This function logs out the user if the "exit" command is entered.
 void logout(char *str) {
     char *token;
-    char delimiter[] = " \t\n"; // רווח, טאב, או שורה חדשה משמשים כסיווגים לפצל
+    char delimiter[] = " \t\n"; // Spaces, tabs, or newline characters serve as delimiters
 
-    token = strtok(str, delimiter); // פיצול המחרוזת למחרוזות נפרדות
+    // Splitting the string into separate tokens
+    token = strtok(str, delimiter);
 
+    // Looping through each token
     while (token != NULL) {
-        if (strcmp(token, "exit") == 0) { // אם המחרוזת הנוכחית היא "exit"
-            printf("Logging out...\n");
+        // If the current token is "exit"
+        if (strcmp(token, "exit") == 0) {
+            // Exit the program
             exit(EXIT_SUCCESS);
         }
 
-        token = strtok(NULL, delimiter); // משך הבדיקה לתא הבא במערך המצביעים
+        // Move to the next token
+        token = strtok(NULL, delimiter);
     }
 }
 
 
+// This function changes the current directory to the specified path.
 void cd(char **args) {
     char newPath[1024];
     strcpy(newPath, "");
 
-    // אם המחרוזת הראשונה מתחילה בגרש, שרשר את כל התתי מחרוזות
+    // If the first string starts with a double quote, concatenate all substrings
     if (args[1][0] == '"') {
+        // Loop through each substring
         for (int i = 1; args[i] != NULL; i++) {
-            strcat(newPath, args[i] + 1); // דלג על הגרש הראשון
-            strcat(newPath, " "); // הוסף רווח בין כל תת המחרוזות
+            strcat(newPath, args[i] + 1); // Skip the first double quote
+            strcat(newPath, " "); // Add a space between each substring
         }
-        // הוסף גרש סופי ותו נולה בסיום הנתיב
+        // Add a closing double quote and null terminator at the end of the path
         newPath[strlen(newPath) - 1] = '"';
         newPath[strlen(newPath)] = '\0';
     } else {
-        strcpy(newPath, args[1]); // אם אין גרש, שלח את התת-מחרוזת הראשונה
+        strcpy(newPath, args[1]); // If there's no double quote, take the first substring
     }
 
-    printf("Changing directory to: %s\n", newPath); // פונקציה מסיבות הדגמה
-    // פה נכניס את הפקודה המתאימה לשינוי הנתיב בפועל
+    printf("Changing directory to: %s\n", newPath); // For demonstration purposes
+    // Insert the actual command here to change the directory
 }
 
+
+// This function copies the contents of a source file to a destination file.
 void cp(char *source_path, char *destination_path) {
     FILE *source_file, *destination_file;
     char ch;
 
-    // פתיחת קובץ המקור לקריאה
+    // Open the source file for reading
     source_file = fopen(source_path, "r");
     if (source_file == NULL) {
         printf("Error: Unable to open source file %s\n", source_path);
         return;
     }
 
-    // פתיחת קובץ היעד לכתיבה
+    // Open the destination file for writing
     destination_file = fopen(destination_path, "w");
     if (destination_file == NULL) {
         printf("Error: Unable to open destination file %s\n", destination_path);
-        fclose(source_file); // סגירת קובץ המקור
+        fclose(source_file); // Close the source file
         return;
     }
 
-    // העתקת תוכן הקובץ המקורי לקובץ היעד
+    // Copy the contents of the source file to the destination file
     while ((ch = fgetc(source_file)) != EOF) {
         fputc(ch, destination_file);
     }
 
-    // סגירת קובץים
+    // Close the files
     fclose(source_file);
     fclose(destination_file);
 
@@ -160,21 +177,20 @@ void cp(char *source_path, char *destination_path) {
 }
 
 
-
 void delete(char *str) {
-    // בדיקה האם הנתיב מכיל רווחים
+    // Check if the path contains spaces
     if (strchr(str, ' ') != NULL) {
-        // הוספת גרשיים מסביב לנתיב כולו
-        char temp[strlen(str) + 3]; // +3 לשני הגרשיים והתו '\0'
+        // Add double quotes around the entire path
+        char temp[strlen(str) + 3]; // +3 for the two double quotes and the null terminator '\0'
         sprintf(temp, "\"%s\"", str);
-        // מחיקת הקובץ על פי הנתיב המוגדר
+        // Delete the file according to the defined path
         if (remove(temp) == 0) {
             printf("File deleted successfully.\n");
         } else {
             printf("Error: Unable to delete the file.\n");
         }
     } else {
-        // אם אין רווחים בנתיב, מחיקה רגילה
+        // If there are no spaces in the path, perform a regular deletion
         if (remove(str) == 0) {
             printf("File deleted successfully.\n");
         } else {
@@ -187,15 +203,17 @@ void mypipe(char **argv1, char **argv2) {
     int pipefd[2];
     pid_t pid;
 
+    // Create pipe
     if (pipe(pipefd) == -1) {
         perror("pipe");
         return;
     }
 
+    // Fork child process
     pid = fork();
     if (pid == -1) {
         perror("fork");
-        return ;
+        return;
     } else if (pid == 0) {
         // Child process
         close(pipefd[0]); // Close the read end of the pipe
@@ -203,32 +221,35 @@ void mypipe(char **argv1, char **argv2) {
         close(pipefd[1]); // Close the write end of the pipe
 
         // Execute the first command
-        execvp(argv1[0], argv1);
-        perror("execvp"); // This line should not be reached if execvp succeeds
-        _exit(1);
+        if (execvp(argv1[0], argv1) == -1) {
+            perror("execvp");
+            exit(EXIT_FAILURE);
+        }
     } else {
         // Parent process
         close(pipefd[1]); // Close the write end of the pipe
         dup2(pipefd[0], STDIN_FILENO); // Redirect stdin to the read end of the pipe
         close(pipefd[0]); // Close the read end of the pipe
 
+        // Wait for child process to complete
+        wait(NULL);
+
         // Execute the second command
-        execvp(argv2[0], argv2);
-        perror("execvp"); // This line should not be reached if execvp succeeds
-        _exit(1);
+        if (execvp(argv2[0], argv2) == -1) {
+            perror("execvp");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
 
 
 void move(char **arguments) {
-    if (arguments[1] == NULL) {
-        printf("mv: missing file operand\n");
-        return;
-    }
-
-    if (arguments[2] == NULL) {
-        printf("mv: missing destination file operand after '%s'\n", arguments[1]);
+    if (arguments[1] == NULL || arguments[2] == NULL) {
+        if (arguments[1] == NULL)
+            printf("mv: missing file operand\n");
+        else
+            printf("mv: missing destination file operand after '%s'\n", arguments[1]);
         return;
     }
 
@@ -238,7 +259,6 @@ void move(char **arguments) {
     }
 
     if (rename(arguments[1], arguments[2]) != 0) {
-
         switch (errno) {
             case ENOENT: // No such file or directory
                 printf("mv: cannot stat '%s': No such file or directory\n", arguments[1]);
@@ -261,47 +281,47 @@ void move(char **arguments) {
     }
 }
 
-
 void echoAppend(char **args) {
-    // אם אחד הפרמטרים או שניהם הם NULL, אין לנו מספיק פרמטרים
-    if (args[1] == NULL || args[2] == NULL) {
+    // Check if there are enough parameters
+    if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         printf("Usage: echo >> [file_path] [text_to_append]\n");
         return;
     }
 
-    // פתיחת קובץ להוספת תוכן, אם הקובץ אינו קיים הוא יווצר
+    // Open file for appending content, create if it doesn't exist
     FILE *file = fopen(args[2], "a");
     if (file == NULL) {
         printf("Failed to open file %s\n", args[2]);
         return;
     }
 
-    // מחרוזת עם התוכן שנרצה להוסיף
-    char *content = args[3];
+    // Concatenate text to append
+    char content[1024] = "";
+    for (int i = 3; args[i] != NULL; i++) {
+        strcat(content, args[i]);
+        strcat(content, " ");
+    }
 
-    // הוספת התוכן לקובץ
+    // Append content to file
     fprintf(file, "%s\n", content);
 
-    // סגירת הקובץ
+    // Close the file
     fclose(file);
 
     printf("Appended \"%s\" to file %s\n", content, args[2]);
 }
 
 void echorite(char **arguments) {
-    int size = 0;
-    while (arguments[size] != NULL) {
-        size++;
-    }
     FILE *file;
 
-    if ((file = fopen(arguments[size - 1], "w")) == NULL) {
-        puts("error");
+    // Open the file for writing, creating it if it doesn't exist
+    if ((file = fopen(arguments[1], "w")) == NULL) {
+        perror("Failed to open file for writing");
         return;
     }
 
     // Write the received string to the file
-    for (int i = 1; i < size - 2; i++) {
+    for (int i = 2; arguments[i] != NULL; i++) {
         fprintf(file, "%s ", arguments[i]);
     }
     fprintf(file, "\n"); // Add a line break
@@ -309,33 +329,107 @@ void echorite(char **arguments) {
     fclose(file);
 }
 
-// void read(char **arguments) {
-//     // בדיקה אם אין ארגומנט ראשון או שיש יותר מארגומנט אחד
-//     if (arguments[1] == NULL || arguments[2]) {
-//         puts("Usage: read [file_path]");
-//         return;
-//     }
+void readf(char **arguments) {
+    // Check if no first argument is provided
+    if (arguments[1] == NULL) {
+        puts("Error: No file path provided");
+        return;
+    }
+    // Check if only one argument is provided
+    if (arguments[2] != NULL) {
+        puts("Error: Too many arguments");
+        return;
+    }
 
-//     FILE *file;
-//     char ch;
+    // Open the file for reading
+    FILE *file = fopen(arguments[1], "r");
+    if (!file) {
+        perror("Error");
+        return;
+    }
 
-//     // פתיחת הקובץ לקריאה
-//     if (!(file = fopen(arguments[1], "r"))) {
-//         puts("Error: Unable to open file");
-//         return;
-//     }
+    // Obtain file size information
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    rewind(file);
 
-//     // קריאת הקובץ והדפסת התוכן שלו למסך
-//     while ((ch = fgetc(file)) != EOF)
-//         putchar(ch);
+    // If the file is empty, print a message and close it
+    if (file_size == 0) {
+        puts("File is empty");
+        fclose(file);
+        return;
+    }
 
-//     // סגירת הקובץ
-//     fclose(file);
-// }
+    // Read the file and print its contents to the screen
+    char *buffer = (char *)malloc(file_size * sizeof(char));
+    if (!buffer) {
+        perror("Error");
+        fclose(file);
+        return;
+    }
+
+    size_t bytes_read = fread(buffer, sizeof(char), file_size, file);
+    if (bytes_read != file_size) {
+        puts("Error reading file");
+        free(buffer);
+        fclose(file);
+        return;
+    }
+
+    fwrite(buffer, sizeof(char), file_size, stdout);
+
+    // Close the file and free memory
+    free(buffer);
+    fclose(file);
+}
 
 
+void wordCount(char **arguments) {
+    // Check the validity of the arguments
+    if (arguments[1] == NULL || arguments[2] == NULL || arguments[3] != NULL) {
+        puts("Usage: wc [-l|-w] [file]");
+        return;
+    }
+    
+    // Open the file for reading
+    FILE *file = fopen(arguments[2], "r");
+    if (file == NULL) {
+        puts("Error: Unable to open file");
+        return;
+    }
+    
+    char ch;
+    int wordCount = 0, lineCount = 0;
+    int inWord = 0;
+    
+    // Count the number of words and lines in the file
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == ' ' || ch == '\n' || ch == '\t') {
+            if (inWord) {
+                wordCount++;
+                inWord = 0;
+            }
+            if (ch == '\n') {
+                lineCount++;
+            }
+        } else {
+            inWord = 1;
+        }
+    }
+    
+    // Check if the last word in the file is not closed with a space, newline, or tab
+    if (inWord) {
+        wordCount++;
+    }
 
-// בכל שינוי יש לבצע קומיט מתאים העבודה מחייבת עבודה עם גיט.
-// ניתן להוסיף פונקציות עזר לתוכנית רק לשים לב שלא מוסיפים את חתימת הפונקציה לקובץ הכותרות
-
-
+    fclose(file);
+    
+    // Print the counting results based on the selected option
+    if (strcmp(arguments[1], "-l") == 0) {
+        printf("%d %s\n", lineCount, arguments[2]);
+    } else if (strcmp(arguments[1], "-w") == 0) {
+        printf("%d %s\n", wordCount, arguments[2]);
+    } else {
+        printf("wc: invalid option -- '%c'\n", arguments[1][1]);
+    }
+}
