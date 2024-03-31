@@ -1,50 +1,79 @@
 #include "myShell.h"
 #include "myFunction.h"
 // --------------------------------------------------------------------------------------------
-int main() {
+int main()
+{
     welcome();
-    while (1) {
+    while (1)
+    {
         getLocation();
         char *input = getInputFromUser();
-        char **arguments = splitArgument(input); // Splitting the input into an array of strings
 
-        // Check if there are less than 3 arguments (when one of them is the command itself)
-        if (arguments[2] == NULL) {
-            printf("Usage: cp [source_file] [destination_file]\n");
-        } else {
-            // Call the cp function with the appropriate paths
-            cp(arguments[1], arguments[2]);
-            // Call the delete function with the original file path
-            delete(arguments[1]);
+        // Check if the input is "exit" with or without leading/trailing spaces
+        if (strcmp(input, "exit") == 0 || strncmp(input, "exit ", 5) == 0)
+            logout(input);
+
+        char **arguments = splitArgument(input);
+        if (strcmp(arguments[0], "exit") == 0)
+        { // if user enters with space before exit
+            free(arguments);
+            logout(input);
         }
 
-        // Print all arguments
-        for (int i = 0; arguments[i] != NULL; i++) {
-            puts(arguments[i]);
+        int size = sizeArray(arguments);
+        int piping = replacePipeWithNull(arguments);
+        switch (parseInput(input))
+        {
+        case 'echo':
+            if (size == 1)
+                puts(""); // if the user enters only echo
+            else if (strcmp(arguments[1], ">") == 0 || strcmp(arguments[1], ">>") == 0)
+                puts("-bash: syntax error near unexpected token `newline'");
+            else if (strcmp(arguments[size - 2], ">") == 0)
+                echorite(arguments); // if the user enters echo > filename
+            else if (strcmp(arguments[size - 2], ">>") == 0)
+                echoppend(arguments); // if the user enters echo >> filename
+            else // if the user enters echo and some words
+                echo(arguments);
+            break;
+        case 'cd':
+            cd(arguments);
+            break;
+        case 'read':
+            readfile(arguments);
+            break;
+        case 'mv':
+            move(arguments);
+            break;
+        case 'wc':
+            wordCount(arguments);
+            break;
+        case 'cp':
+            if (size < 3)
+                puts("Usage: cp [source_file] [destination_file]");
+            else
+                cp(arguments[1], arguments[2]);
+            break;
+        case 'delete':
+            delete(arguments);
+            break;
+        case 'dir':
+            get_dir(arguments);
+            break;
+        case 'pipe':
+            handlePiping(arguments);
+            break;
+        default:
+            handleDefault();
+            break;
         }
-
-        // Call the move function with the appropriate paths
-        move(arguments);
-
-        // Call the echoAppend function with the appropriate paths
-        echoAppend(arguments);
-
-        // Call the read function with the appropriate path
-         readf(arguments);
-        wordCount(arguments);
-        // examplepPipe(); // Example of using the pipe function
-        mypipe(arguments, arguments); // Call the pipe function with the appropriate paths  
 
         free(arguments); // Free memory
-        free(input); // Free memory
-        
-        logout(input); // Check logout condition
-        break; // Exit the loop
+        free(input);    // Free memory
     }
-    
+
     return 0;
 }
-
 // --------------------------------------------------------------------------------------------
 
 void welcome()
