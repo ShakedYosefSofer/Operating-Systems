@@ -61,41 +61,23 @@ char **splitArgument(char *str)
     int size = 2;
     int index = 0;
     char **arguments = (char **)malloc(size * sizeof(char *));
-    char *subStr = str;
+    char *token = strtok(str, " "); // Split the string by space
 
-    while (*subStr != '\0')
+    while (token != NULL)
     {
-        // Start of each substring
-        while (*subStr == ' ')
-            subStr++;
-
-        // Exit if we reach the end of the string
-        if (*subStr == '\0')
-            break;
-
-        // Finding the end of the substring
-        char *end = strchr(subStr, ' ');
-        if (end == NULL)
-            end = subStr + strlen(subStr);
-
-        // Storing the substring in the array of pointers
-        int subStrLen = end - subStr;
-        arguments[index] = (char *)malloc((subStrLen + 1) * sizeof(char));
-        strncpy(arguments[index], subStr, subStrLen);
-        arguments[index][subStrLen] = '\0';
-
+        arguments[index] = (char *)malloc((strlen(token) + 1) * sizeof(char));
+        strcpy(arguments[index], token);
         index++;
         size++;
         arguments = (char **)realloc(arguments, size * sizeof(char *));
-
-        // Moving to the start of the next substring
-        subStr = end;
+        token = strtok(NULL, " "); // Get the next token
     }
 
     arguments[index] = NULL; // Adding NULL to the end of the array
 
     return arguments;
 }
+
 
 
 // This function logs out the user if the "exit" command is entered.
@@ -177,12 +159,12 @@ void cp(char *source_path, char *destination_path) {
 }
 
 
-void delete(char *str) {
+void delete( char *path) {
     // Check if the path contains spaces
-    if (strchr(str, ' ') != NULL) {
+    if (strchr(path, ' ') != NULL) {
         // Add double quotes around the entire path
-        char temp[strlen(str) + 3]; // +3 for the two double quotes and the null terminator '\0'
-        sprintf(temp, "\"%s\"", str);
+        char temp[strlen(path) + 3]; // +3 for the two double quotes and the null terminator '\0'
+        sprintf(temp, "\"%s\"", path);
         // Delete the file according to the defined path
         if (remove(temp) == 0) {
             printf("File deleted successfully.\n");
@@ -191,7 +173,7 @@ void delete(char *str) {
         }
     } else {
         // If there are no spaces in the path, perform a regular deletion
-        if (remove(str) == 0) {
+        if (remove(path) == 0) {
             printf("File deleted successfully.\n");
         } else {
             printf("Error: Unable to delete the file.\n");

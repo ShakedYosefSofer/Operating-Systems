@@ -5,4 +5,3 @@
 #include <unistd.h>
 
 void welcome();
-void examplepPipe();
