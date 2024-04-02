@@ -1,6 +1,26 @@
 #include "myShell.h"
 #include "myFunction.h"
 // --------------------------------------------------------------------------------------------
+
+
+
+// Function to check if a substring exists within a string
+int containsSubstring(const char *haystack, const char *needle) {
+    int hay_length = strlen(haystack);
+    int needle_length = strlen(needle);
+    if (needle_length == 0) return 1; // If the substring to search for is empty, it exists in any string
+    if (hay_length < needle_length) return 0; // If the substring to search for is longer than the string being checked, it cannot exist in it
+
+    for (int i = 0; i <= hay_length - needle_length; ++i) {
+        if (strncmp(haystack + i, needle, needle_length) == 0) {
+            return 1; // Substring found
+        }
+    }
+    return 0; // Substring not found
+}
+
+
+
 int main() {
     welcome();
     while (1) {
