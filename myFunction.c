@@ -266,34 +266,68 @@ void move(char **arguments) {
     }
 }
 
+
 void echoAppend(char **args) {
-    // Check if there are enough parameters
-    if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
-        printf("Usage: echo >> [file_path] [text_to_append]\n");
+    // Find the index of "<<"
+    int splitIndex = 0;
+    while (args[splitIndex] != NULL) {
+        if (strcmp(args[splitIndex], ">>") == 0) {
+            break;
+        }
+        splitIndex++;
+    }
+
+    // Check if there is text before the "<<"
+    if (splitIndex == 0) {
+        printf("Error: No text specified.\n");
         return;
     }
 
-    // Open file for appending content, create if it doesn't exist
-    FILE *file = fopen(args[2], "a");
+    // Combine all arguments from the second one until the one before "<<"
+    int totalLength = 0;
+    for (int i = 1; i < splitIndex; ++i) {
+        totalLength += strlen(args[i]) + 1; // +1 for space
+    }
+
+    // Allocate memory for the text
+    char *text = (char *)malloc(totalLength + 1); // +1 for null terminator
+    if (text == NULL) {
+        printf("Error: Memory allocation failed.\n");
+        return;
+    }
+
+    // Concatenate all arguments into one string
+    text[0] = '\0'; // Initialize the string
+    for (int i = 1; i < splitIndex; ++i) {
+        strcat(text, args[i]);
+        strcat(text, " "); // Add space between arguments
+    }
+
+    // Remove the trailing space
+    text[strlen(text) - 1] = '\0';
+
+    // Get the file path after "<<"
+    char *filePath = args[splitIndex + 1];
+
+    // Open the file for appending, create if not exists
+    FILE *file = fopen(filePath, "a+");
     if (file == NULL) {
-        printf("Failed to open file %s\n", args[2]);
+        // Unable to open or create the file
+        printf("Error: Unable to open or create the file.\n");
+        free(text); // Free allocated memory
         return;
     }
 
-    // Concatenate text to append
-    char content[1024] = "";
-    for (int i = 3; args[i] != NULL; i++) {
-        strcat(content, args[i]);
-        strcat(content, " ");
-    }
-
-    // Append content to file
-    fprintf(file, "%s\n", content);
+    // Write the text to the file
+    fprintf(file, "%s\n", text);
 
     // Close the file
     fclose(file);
 
-    printf("Appended \"%s\" to file %s\n", content, args[2]);
+    // Free allocated memory
+    free(text);
+
+    printf("Text appended to the file successfully.\n");
 }
 
 void echorite(char **arguments) {
