@@ -448,52 +448,47 @@ void readf(char **arguments) {
 }
 
 
-void wordCount(char **arguments) {
-    // Check the validity of the arguments
-    if (arguments[1] == NULL || arguments[2] == NULL || arguments[3] != NULL) {
-        puts("Usage: wc [-l|-w] [file]");
+void wordCount(char **args) {
+    // Check if the correct number of arguments is provided
+    if (args[1] == NULL || args[2] == NULL || args[3] != NULL) {
+        printf("Usage: wordCount [-l | -w] [file_path]\n");
         return;
-    }
-    
-    // Open the file for reading
-    FILE *file = fopen(arguments[2], "r");
-    if (file == NULL) {
-        puts("Error: Unable to open file");
-        return;
-    }
-    
-    char ch;
-    int wordCount = 0, lineCount = 0;
-    int inWord = 0;
-    
-    // Count the number of words and lines in the file
-    while ((ch = fgetc(file)) != EOF) {
-        if (ch == ' ' || ch == '\n' || ch == '\t') {
-            if (inWord) {
-                wordCount++;
-                inWord = 0;
-            }
-            if (ch == '\n') {
-                lineCount++;
-            }
-        } else {
-            inWord = 1;
-        }
-    }
-    
-    // Check if the last word in the file is not closed with a space, newline, or tab
-    if (inWord) {
-        wordCount++;
     }
 
-    fclose(file);
-    
-    // Print the counting results based on the selected option
-    if (strcmp(arguments[1], "-l") == 0) {
-        printf("%d %s\n", lineCount, arguments[2]);
-    } else if (strcmp(arguments[1], "-w") == 0) {
-        printf("%d %s\n", wordCount, arguments[2]);
-    } else {
-        printf("wc: invalid option -- '%c'\n", arguments[1][1]);
+    // Get the option (-L for lines, -W for words)
+    char *option = args[1];
+    // Get the file path
+    char *file_path = args[2];
+
+    // Open the file
+    FILE *file = fopen(file_path, "r");
+
+    // Check if the file exists
+    if (file == NULL) {
+        printf("File '%s' does not exist.\n", file_path);
+        return;
     }
+
+    int count = 0; // Counter for lines or words, depending on the option
+
+    // Read the file line by line and count lines or words
+    char line[1000]; // Assume lines are not longer than 1000 characters
+    if (strcmp(option, "-l") == 0) {
+        // Count lines
+        while (fgets(line, sizeof(line), file) != NULL) {
+            count++;
+        }
+        printf("Number of lines in '%s': %d\n", file_path, count);
+    } else if (strcmp(option, "-w") == 0) {
+        // Count words
+        while (fscanf(file, "%s", line) != EOF) {
+            count++;
+        }
+        printf("Number of words in '%s': %d\n", file_path, count);
+    } else {
+        printf("Invalid option '%s'. Use -l for lines or -w for words.\n", option);
+    }
+
+    // Close the file
+    fclose(file);
 }
