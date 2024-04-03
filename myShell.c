@@ -27,6 +27,27 @@ int containsSubstring(char *str, char *needle) {
 }
 
 
+// void checkEchoFunction(char *input, char **arguments) {
+
+//     char *ptr = input;
+
+//     while (*ptr != '\0') {
+//         if (*ptr == '>'&& *(ptr+1) != '>'){
+//             echorite(**arguments);
+//             return 0;
+
+//         }else if (*ptr == '>' && *(ptr+1) == '>'){
+//             echoAppend(**arguments);
+//             return 1;
+//         }else{
+//             printf ("ERROR: Invalid input\n");
+//         return -1;
+//         }
+//         ptr++;
+//     }
+// }
+
+
 
 int main() {
     welcome();
@@ -45,10 +66,20 @@ else if (strcmp(input, "mv") == 0) {
     printf("Usage: mv [source_file] [destination_file]\n");
     move(arguments);
 }
+
+
 else if (strcmp(input, "echo") == 0) {
-    printf("Usage: echo [text] [destination_file]\n");
-    echoAppend(arguments);
+    printf("Usage: echo [text] >> [destination_file]\n");
+   echoAppend(arguments);
 }
+else if (strcmp(input, "echor") == 0) {
+    printf("Usage: echor [text]  > [destination_file]\n");
+   echorite(arguments);
+    
+}
+
+
+
 else if (strcmp(input, "rm") == 0) {
     printf("Usage: rm [file]\n");
     delete(arguments[1]);
@@ -71,6 +102,7 @@ else if (strcmp(input, "pipe") == 0) {
     printf("Usage: pipe [command1] [command2]\n");
     mypipe(arguments, arguments);
 }
+
    
     
         free(arguments); // Free memory

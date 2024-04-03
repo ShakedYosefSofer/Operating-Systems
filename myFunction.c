@@ -330,22 +330,67 @@ void echoAppend(char **args) {
     printf("Text appended to the file successfully.\n");
 }
 
-void echorite(char **arguments) {
-    FILE *file;
+void echorite(char **args) {
+    // Find the index of "<"
+    int splitIndex = 0;
+    while (args[splitIndex] != NULL) {
+        if (strcmp(args[splitIndex], ">") == 0) {
+            break;
+        }
+        splitIndex++;
+    }
 
-    // Open the file for writing, creating it if it doesn't exist
-    if ((file = fopen(arguments[1], "w")) == NULL) {
-        perror("Failed to open file for writing");
+    // Check if there is text before the "<"
+    if (splitIndex == 0) {
+        printf("Error: No text specified.\n");
         return;
     }
 
-    // Write the received string to the file
-    for (int i = 2; arguments[i] != NULL; i++) {
-        fprintf(file, "%s ", arguments[i]);
+    // Combine all arguments from the second one until the one before "<"
+    int totalLength = 0;
+    for (int i = 1; i < splitIndex; ++i) {
+        totalLength += strlen(args[i]) + 1; // +1 for space
     }
-    fprintf(file, "\n"); // Add a line break
 
+    // Allocate memory for the text
+    char *text = (char *)malloc(totalLength + 1); // +1 for null terminator
+    if (text == NULL) {
+        printf("Error: Memory allocation failed.\n");
+        return;
+    }
+
+    // Concatenate all arguments into one string
+    text[0] = '\0'; // Initialize the string
+    for (int i = 1; i < splitIndex; ++i) {
+        strcat(text, args[i]);
+        strcat(text, " "); // Add space between arguments
+    }
+
+    // Remove the trailing space
+    text[strlen(text) - 1] = '\0';
+
+    // Get the file path after "<"
+    char *filePath = args[splitIndex + 1];
+
+    // Open the file for overwriting, create if not exists
+    FILE *file = fopen(filePath, "w");
+    if (file == NULL) {
+        // Unable to open or create the file
+        printf("Error: Unable to open or create the file.\n");
+        free(text); // Free allocated memory
+        return;
+    }
+
+    // Write the text to the file
+    fprintf(file, "%s\n", text);
+
+    // Close the file
     fclose(file);
+
+    // Free allocated memory
+    free(text);
+
+    printf("Text overwritten to the file successfully.\n");
 }
 
 void readf(char **arguments) {
