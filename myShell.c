@@ -5,20 +5,21 @@
 
 
 // Function to check if a substring exists within a string
-int containsSubstring(const char *haystack, const char *needle) {
-    int hay_length = strlen(haystack);
+int containsSubstring(char *str, char *needle) {
+    int hay_length = strlen(str);
     int needle_length = strlen(needle);
     if (needle_length == 0) return 1; // If the substring to search for is empty, it exists in any string
-    if (hay_length < needle_length) return 0; // If the substring to search for is longer than the string being checked, it cannot exist in it
 
     for (int i = 0; i <= hay_length - needle_length; ++i) {
-        if (strncmp(haystack + i, needle, needle_length) == 0) {
-            return 1; // Substring found
+        if (strncmp(str + i, needle, needle_length) == 0) {
+            if ((i == 0 || str[i - 1] == ' ') && // Check if the substring starts at the beginning of the string or after a space
+                (i + needle_length == hay_length || str[i + needle_length] == ' ')) { // Check if the substring ends at the end of the string or before a space
+                return 1; // Substring found
+            }
         }
     }
     return 0; // Substring not found
 }
-
 
 
 int main() {
@@ -55,7 +56,7 @@ else if (strcmp(input, "wc") == 0) {
     printf("Usage: wc [file]\n");
     wordCount(arguments);
 }
-else if (strcmp(input, "exit") == 0) {
+else if (containsSubstring(input, "exit")) {
     printf("Usage: logout\n");
     logout(input);
 }
