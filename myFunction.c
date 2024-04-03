@@ -46,14 +46,18 @@ char *getInputFromUser()
     char *str = (char *)malloc(size * sizeof(char));
     while ((ch = getchar()) != '\n')
     {
-        *(str + index) = ch;
-        size++;
-        index++;
-        str = (char *)realloc(str, size);
+        if(ch != '\n') 
+        {
+            *(str + index) = ch;
+            size++;
+            index++;
+            str = (char *)realloc(str, size);
+        }
     }
     *(str + index) = '\0';
     return str;
 }
+
 
 // You are required to implement the strtok function, meaning that this function will perform exactly the same thing but without using the strtok function.
 char **splitArgument(char *str)

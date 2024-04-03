@@ -10,16 +10,22 @@ int containsSubstring(char *str, char *needle) {
     int needle_length = strlen(needle);
     if (needle_length == 0) return 1; // If the substring to search for is empty, it exists in any string
 
-    for (int i = 0; i <= hay_length - needle_length; ++i) {
-        if (strncmp(str + i, needle, needle_length) == 0) {
-            if ((i == 0 || str[i - 1] == ' ') && // Check if the substring starts at the beginning of the string or after a space
-                (i + needle_length == hay_length || str[i + needle_length] == ' ')) { // Check if the substring ends at the end of the string or before a space
-                return 1; // Substring found
+    int needle_index = 0; // Index for the needle string
+
+    for (int i = 0; i < hay_length; ++i) {
+        if (str[i] == needle[needle_index]) {
+            needle_index++; // Move to the next character in the needle string
+            if (needle_index == needle_length) {
+                // Found the full substring
+                return 1;
             }
+        } else {
+            needle_index = 0; // Reset needle index if characters don't match
         }
     }
     return 0; // Substring not found
 }
+
 
 
 int main() {
@@ -56,10 +62,11 @@ else if (strcmp(input, "wc") == 0) {
     printf("Usage: wc [file]\n");
     wordCount(arguments);
 }
-else if (containsSubstring(input, "exit")) {
+else if (strstr(input, "exit") != NULL) {
     printf("Usage: logout\n");
     logout(input);
 }
+
 else if (strcmp(input, "pipe") == 0) {
     printf("Usage: pipe [command1] [command2]\n");
     mypipe(arguments, arguments);
