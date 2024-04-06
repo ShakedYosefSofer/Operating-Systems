@@ -1,5 +1,6 @@
 #include "myShell.h"
 #include "myFunction.h"
+
 // --------------------------------------------------------------------------------------------
 
 
@@ -25,27 +26,6 @@ int containsSubstring(char *str, char *needle) {
     }
     return 0; // Substring not found
 }
-
-
-// void checkEchoFunction(char *input, char **arguments) {
-
-//     char *ptr = input;
-
-//     while (*ptr != '\0') {
-//         if (*ptr == '>'&& *(ptr+1) != '>'){
-//             echorite(**arguments);
-//             return 0;
-
-//         }else if (*ptr == '>' && *(ptr+1) == '>'){
-//             echoAppend(**arguments);
-//             return 1;
-//         }else{
-//             printf ("ERROR: Invalid input\n");
-//         return -1;
-//         }
-//         ptr++;
-//     }
-// }
 
 
 
