@@ -5,7 +5,8 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <sys/wait.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
 
 // בפונקציה הנ"ל קיבלנו את הנתיב ממנו אנחנו מריצים את התוכנית שלנו
 //  עליכם לשדרג את הנראות של הנתיב כך ש-בתחילת הנתיב יופיע שם המחשב (כמו בטרמינל המקורי) בסוף יופיע הסימן דולר
@@ -85,25 +86,21 @@ char **splitArgument(char *str)
 
 // This function logs out the user if the "exit" command is entered.
 void logout(char *str) {
-    char *token;
-    char delimiter[] = " \t\n"; // Spaces, tabs, or newline characters serve as delimiters
+    // Convert the input string to lowercase
+    char lowerCaseStr[strlen(str) + 1];
+    strcpy(lowerCaseStr, str);
+    for (int i = 0; lowerCaseStr[i]; i++) {
+        lowerCaseStr[i] = tolower(lowerCaseStr[i]);
+    }
 
-    // Splitting the string into separate tokens
-    token = strtok(str, delimiter);
-
-    // Looping through each token
-    while (token != NULL) {
-        // If the current token is "exit"
-        if (strcmp(token, "exit") == 0) {
-            // Exit the program
-            exit(EXIT_SUCCESS);
-        }
-
-        // Move to the next token
-        token = strtok(NULL, delimiter);
+    // Check if the lowercase string contains the sequence "exit"
+    if (strstr(lowerCaseStr, "exit") != NULL) {
+        printf("Log out...\n");
+        exit(EXIT_SUCCESS);
+    } else {
+        printf("The 'exit' sequence was not detected. Continuing program...\n");
     }
 }
-
 
 // This function changes the current directory to the specified path.
 void cd(char **args) {
@@ -228,44 +225,28 @@ void mypipe(char **argv1, char **argv2) {
 }
 
 
-
 void move(char **arguments) {
-    if (arguments[1] == NULL || arguments[2] == NULL) {
-        if (arguments[1] == NULL)
-            printf("mv: missing file operand\n");
-        else
-            printf("mv: missing destination file operand after '%s'\n", arguments[1]);
+    if(arguments[0] == NULL){
+        puts("mv: missing file operand");
+        return;
+    }
+    if(arguments[1] == NULL){
+        printf("mv: missing destination file operand after '%s'", arguments[0]);
+        return;
+    }
+    if(arguments[2] != NULL){
+        puts("too many arguments");
         return;
     }
 
-    if (arguments[3] != NULL) {
-        printf("mv: too many arguments\n");
-        return;
-    }
-
-    if (rename(arguments[1], arguments[2]) != 0) {
-        switch (errno) {
-            case ENOENT: // No such file or directory
-                printf("mv: cannot stat '%s': No such file or directory\n", arguments[1]);
-                break;
-            case EACCES: // Permission denied
-                printf("mv: cannot create regular file '%s': Permission denied\n", arguments[2]);
-                break;
-            case EISDIR: // Is a directory
-                printf("mv: cannot create regular file '%s': Is a directory\n", arguments[2]);
-                break;
-            case EEXIST: // File exists
-                printf("mv: cannot create regular file '%s': File exists\n", arguments[2]);
-                break;
-            default:
-                perror("mv"); // Print system error message
-                break;
-        }
+    if (rename(arguments[0], arguments[1]) == 0) {
+        printf("File moved successfully from '%s' to '%s'\n", arguments[0], arguments[1]);
+        if (unlink(arguments[0]) != 0)
+            printf("-myShell: delete: %s: No such file or directory\n", arguments[0]);
     } else {
-        printf("'%s' was successfully moved to '%s'\n", arguments[1], arguments[2]);
+        printf("Error moving file: %s\n", strerror(errno));
     }
 }
-
 
 void echoAppend(char **args) {
     // Find the index of "<<"

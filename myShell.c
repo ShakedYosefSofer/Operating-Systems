@@ -93,7 +93,7 @@ else if (strcmp(input, "wc") == 0) {
     printf("Usage: wc [file]\n");
     wordCount(arguments);
 }
-else if (strstr(input, "exit") != NULL) {
+else if (strcmp(input, "exit") == 0) {
     printf("Usage: logout\n");
     logout(input);
 }
